@@ -1,25 +1,64 @@
 #!/usr/bin/env node
 
+/***
+ * Server started add
+ */
+
+const mongoose = require('mongoose');
+const config = require('../config.js');
+
+/* ---------
+ mongoose connected */
+
+mongoose.connect(config.mongodbUri, {useUnifiedTopology: true, useNewUrlParser: true, useCreateIndex: true });
+mongoose.Promise = global.Promise;
+
+const db = mongoose.connection;
+db.on('error', console.error);
+db.once('open', ()=>{
+    console.log('connected to mongodb server')
+});
+
+const model = require('../model/model');
+const syncQueue = require('sync-queue');
+const Queue = new syncQueue();
+
+const pushQueue = require('../pushQueue');
+
+model.judgeQueue.find()
+    .where('server_number').equals(config.serverNumber)
+    .then(result=>{
+        for(let i = 0; i < result.length; i++) {
+            pushQueue(Queue, result[i]);
+        }
+    }).catch(err => {
+        console.log("database Error!");
+        console.log(err);
+});
+
+
+
 /**
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('judge-server:server');
-var http = require('http');
+const app = require('../app');
+const debug = require('debug')('judge-server:server');
+const http = require('http');
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || '3004');
 app.set('port', port);
+app.set('judgeQueue', Queue);
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+const server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -34,7 +73,7 @@ server.on('listening', onListening);
  */
 
 function normalizePort(val) {
-  var port = parseInt(val, 10);
+  const port = parseInt(val, 10);
 
   if (isNaN(port)) {
     // named pipe
@@ -58,7 +97,7 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === 'string'
+  const bind = typeof port === 'string'
     ? 'Pipe ' + port
     : 'Port ' + port;
 
@@ -82,8 +121,8 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
+  const addr = server.address();
+  const bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
