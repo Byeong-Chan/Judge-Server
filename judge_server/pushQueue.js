@@ -65,7 +65,7 @@ const status_set = function(status_number, pending_number) {
 const pushQueue = function(Queue, judgeObj) {
     let user_code = "";
     const max_process_number = 200; // TODO: 나중에 고쳐주세요.
-    const max_output_size = 16384; // TODO: 나중에 고쳐주세요.
+    const max_output_size = 2097152; // TODO: 나중에 고쳐주세요.
     Queue.place(function() {
         model.judge.findOne()
             .where('pending_number').equals(judgeObj.pending_number)
