@@ -11,6 +11,7 @@ router.use(bodyParser.urlencoded({
 
 router.post('/', function(req, res, next) {
     const Queue = req.app.get('judgeQueue');
+    console.log(req.body);
     model.judgeQueue.findOne()
         .where('pending_number').equals(req.body.pending_number)
         .then(result => {
