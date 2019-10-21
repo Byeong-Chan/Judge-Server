@@ -4,5 +4,6 @@ output.txt
 test.c
 test.o
 test.cpp
-
+test.java
+test.python
 
