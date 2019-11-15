@@ -99,6 +99,7 @@ const pushQueue = function(Queue, judgeObj) {
                 if(Compiler[user_lang] === undefined) throw new Error('none-language');
 
                 const lang = user_lang;
+                const dockerlang = { "c": "gcc", "cpp":"gcc", "java":"java", "python":"python"}[lang];
 
                 const errCheck = Compiler[lang](user_code);
 
@@ -110,7 +111,7 @@ const pushQueue = function(Queue, judgeObj) {
 
                     //TODO: 서버를 AWS로 옮겼을 때 script를 docker 없이 사용하는것으로 고쳐주세요.
                     const script = 'docker run --rm -v' + ' ' + testerDir + ':' + dockerDir + ' ' +
-                        lang + ' ' + '/home/libjudger.so' + ' ' + '--max_cpu_time=' + result.time_limit + ' ' +
+                        dockerlang + ' ' + '/home/libjudger.so' + ' ' + '--max_cpu_time=' + result.time_limit + ' ' +
                         '--max_real_time=' + (result.time_limit * 5) + ' ' + '--max_memory=' + result.memory_limit + ' ' +
                         '--max_process_number=' + max_process_number + ' ' + '--max_output_size=' + max_output_size + ' ' +
                         '--exe_path="/home/test.o"' + ' ' + '--input_path="/home/input.txt"' + ' ' +
