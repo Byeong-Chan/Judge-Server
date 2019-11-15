@@ -1,0 +1,16 @@
+{
+  "name": "judge-handler",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./app"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "fs": "0.0.1-security",
+    "mongoose": "^5.7.5",
+    "mongoose-auto-increment": "^5.0.1",
+    "path": "^0.12.7",
+    "sync-queue": "0.0.2"
+  }
+}
