@@ -25,11 +25,8 @@ setInterval(() => {
         .sort({'pending_number' : 1}).limit(1)
         .then(result => {
             if(result.length == 0) throw new Error('no-judge-queue');
-            return model.judge.findOne()
-                .where('pending_number').equals(result[0].pending_number);
-        }).then(result => {
-            pushQueue(Queue, result);
-            return model.judgeQueue.where('pending_number').equals(result.pending_number)
+            pushQueue(Queue, result[0]);
+            return model.judgeQueue.where('pending_number').equals(result[0].pending_number)
                 .deleteOne();
         }).catch(err => {
             console.log(err);
