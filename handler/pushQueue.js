@@ -67,9 +67,9 @@ const seccomp_rule = function(lang) {
     }
 };
 
-const state_set = function(state_number, pending_number, error_message) {
+const state_set = function(state_number, pending_number, error_message, max_memory_usage, max_time_usage) {
     model.judge.where('pending_number').equals(pending_number)
-        .update({$set: {state: state_number, ErrorMessage: error_message}}).then(result => {
+        .update({$set: {state: state_number, ErrorMessage: error_message, time_usage: max_time_usage, memory_usage: max_memory_usage}}).then(result => {
             //TODO: 로깅할것인가?
             console.log(result);
         }).catch(err => {
@@ -85,6 +85,8 @@ const pushQueue = function(Queue, judgeObj) {
     let error_message = "";
     const max_process_number = 200; // TODO: 나중에 고쳐주세요.
     const max_output_size = 2097152; // TODO: 나중에 고쳐주세요.
+    let max_time_usage = 0;
+    let max_memory_usage = 0;
     Queue.place(function() {
         model.judge.findOne()
             .where('pending_number').equals(judgeObj.pending_number)
@@ -121,6 +123,13 @@ const pushQueue = function(Queue, judgeObj) {
                     const stdout = execSync(script).toString();
                     const status = JSON.parse(stdout);
 
+                    if(max_memory_usage < status.memory) {
+                        max_memory_usage = status.memory;
+                    }
+                    if(max_time_usage < status.cpu_time) {
+                        max_time_usage = status.cpu_time;
+                    }
+
                     // TODO: 개별 채점 해야하는가? 백준식 채점이 좋은가? 개별 채점 구현하려면 스키마를 바꿔야합니다.
                     if(status.result === 4) {
                         if(status.signal === 25) throw new Error('Presentation-Error');
@@ -150,16 +159,14 @@ const pushQueue = function(Queue, judgeObj) {
                         if(system_output_cmp[j].trimEnd() !== user_output_cmp[j].trimEnd()) throw new Error('Wrong-Answer');
                     }
                 }
-                state_set(2, judgeObj.pending_number, error_message);
+                state_set(2, judgeObj.pending_number, error_message, max_memory_usage, max_time_usage);
                 Queue.next();
             }).catch(err => {
                 if(typeof err.message === 'undefined') {
-                    console.log('Hello undefined');
                     // TODO: 채점 sever 문제는 중대하므로 로깅으로 나중에 꼭 고칠 것
                     console.log(err);
                 }
                 else if(typeof err.message !== 'string') {
-                    console.log(typeof err.message);
                     // TODO: 채점 sever 문제는 중대하므로 로깅으로 나중에 꼭 고칠 것
                     console.log(err);
                 }
@@ -167,40 +174,41 @@ const pushQueue = function(Queue, judgeObj) {
                     /***
                      * 컴파일 에러
                      */
-                    state_set(8, judgeObj.pending_number, error_message);
+                    state_set(8, judgeObj.pending_number, error_message, max_memory_usage, max_time_usage);
                 }
                 else if(err.message === 'Wrong-Answer') {
                     /***
                      * 오답
                      */
-                    state_set(3, judgeObj.pending_number, error_message);
+                    state_set(3, judgeObj.pending_number, error_message, max_memory_usage, max_time_usage);
                 }
                 else if(err.message === 'Timelimit-Error') {
                     /***
                      * 시간 초과
                      */
-                    state_set(4, judgeObj.pending_number, error_message);
+                    state_set(4, judgeObj.pending_number, error_message, max_memory_usage, max_time_usage);
                 }
                 else if(err.message === 'Memorylimit-Error') {
                     /***
                      * 메모리 초과
                      */
-                    state_set(5, judgeObj.pending_number, error_message);
+                    state_set(5, judgeObj.pending_number, error_message, max_memory_usage, max_time_usage);
                 }
                 else if(err.message === 'Runtime-Error') {
                     /***
                      * 런타임 에러
                      */
-                    state_set(6, judgeObj.pending_number, error_message);
+                    state_set(6, judgeObj.pending_number, error_message, max_memory_usage, max_time_usage);
                 }
                 else if(err.message === 'Presentation-Error') {
                     /***
                      * 출력초과
                      */
-                    state_set(7, judgeObj.pending_number, error_message);
+                    state_set(7, judgeObj.pending_number, error_message, max_memory_usage, max_time_usage);
                 }
                 else {
                     //TODO: 채점 server 문제는 중대하므로 로깅으로 나중에 꼭 고칠 것
+                    state_set(9, judgeObj.pending_number, error_message, max_memory_usage, max_time_usage);
                     console.log(err);
                 }
                 Queue.next();

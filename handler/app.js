@@ -29,6 +29,5 @@ setInterval(() => {
             return model.judgeQueue.where('pending_number').equals(result[0].pending_number)
                 .deleteOne();
         }).catch(err => {
-            console.log(err);
     });
 }, 5000);
