@@ -65,7 +65,7 @@ const seccomp_rule = function(lang) {
 
 const state_set = function(state_number, pending_number, error_message, max_memory_usage, max_time_usage) {
     model.judge.where('pending_number').equals(pending_number)
-        .update({$set: {state: state_number, ErrorMessage: error_message, time_usage: max_time_usage, memory_usage: max_memory_usage}}).then(result => {
+        .updateOne({$set: {state: state_number, ErrorMessage: error_message, time_usage: max_time_usage, memory_usage: max_memory_usage}}).then(result => {
             //TODO: 로깅할것인가?
             console.log(result);
         }).catch(err => {
