@@ -106,7 +106,7 @@ const pushQueue = function(Queue, judgeObj) {
                 for(let i = 0; i < result.input_list.length; i++) {
                     fs.writeFileSync('../tester/input.txt', result.input_list[i].txt, 'utf8');
 
-                    const script = `${testerDir}/libjudger.so` + ' ' + '--max_cpu_time=' + result.time_limit + ' ' +
+                    const script = 'sudo ' + `${testerDir}/libjudger.so` + ' ' + '--max_cpu_time=' + result.time_limit + ' ' +
                         '--max_real_time=' + (result.time_limit * 5) + ' ' + '--max_memory=' + result.memory_limit + ' ' +
                         '--max_process_number=' + max_process_number + ' ' + '--max_output_size=' + max_output_size + ' ' +
                         `--exe_path="${testerDir}/test.o"` + ' ' + `--input_path="${testerDir}/input.txt"` + ' ' +
