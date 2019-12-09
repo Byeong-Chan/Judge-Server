@@ -97,7 +97,6 @@ const pushQueue = function(Queue, judgeObj) {
                 if(Compiler[user_lang] === undefined) throw new Error('none-language');
 
                 const lang = user_lang;
-                const dockerlang = { "c": "gcc", "cpp":"gcc", "java":"java", "python":"python"}[lang];
 
                 const errCheck = Compiler[lang](user_code);
 
