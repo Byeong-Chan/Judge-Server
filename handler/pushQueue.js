@@ -4,17 +4,14 @@ const execSync = require('child_process').execSync;
 const path = require('path');
 
 const testerDir = path.join(__dirname, "../tester");
-const dockerDir = "/home"; // TODO: 나중에 서버로 옮겼을 때 제거해야합니다.
 
 //TODO: spj 구현하세요.
 //TODO: java python compile 구현하세요.
 
-//TODO: 서버를 AWS로 옮겼을 때 script를 docker 없이 사용하는것으로 고쳐주세요.
 const Compiler = {
     'c': function(user_code) {
         fs.writeFileSync('../tester/test.c', user_code, 'utf8');
-        const script = 'docker run --rm -v' + ' ' + testerDir + ':' + dockerDir + ' ' +
-            'gcc gcc /home/test.c -o /home/test.o -O2 -Wall -lm -static -std=c99 -DONLINE_JUDGE -DBOJ';
+        const script = `gcc ${testerDir}/test.c -o ${testerDir}/test.o -O2 -Wall -lm -static -std=c99 -DONLINE_JUDGE -DBOJ`;
 
         let ret = { success: false, stdout: ''};
         try {
@@ -31,8 +28,7 @@ const Compiler = {
     },
     'cpp': function(user_code) {
         fs.writeFileSync('../tester/test.cc', user_code, 'utf8');
-        const script = 'docker run --rm -v' + ' ' + testerDir + ':' + dockerDir + ' ' +
-            'gcc g++ /home/test.cc -o /home/test.o -O2 -Wall -lm -static -std=gnu++17 -DONLINE_JUDGE -DBOJ';
+        const script = `g++ ${testerDir}/test.cc -o ${testerDir}/test.o -O2 -Wall -lm -static -std=gnu++17 -DONLINE_JUDGE -DBOJ`;
 
         let ret = { success: false, stdout: '' };
         try {
@@ -111,13 +107,11 @@ const pushQueue = function(Queue, judgeObj) {
                 for(let i = 0; i < result.input_list.length; i++) {
                     fs.writeFileSync('../tester/input.txt', result.input_list[i].txt, 'utf8');
 
-                    //TODO: 서버를 AWS로 옮겼을 때 script를 docker 없이 사용하는것으로 고쳐주세요.
-                    const script = 'docker run --rm -v' + ' ' + testerDir + ':' + dockerDir + ' ' +
-                        dockerlang + ' ' + '/home/libjudger.so' + ' ' + '--max_cpu_time=' + result.time_limit + ' ' +
+                    const script = `${testerDir}/libjudger.so` + ' ' + '--max_cpu_time=' + result.time_limit + ' ' +
                         '--max_real_time=' + (result.time_limit * 5) + ' ' + '--max_memory=' + result.memory_limit + ' ' +
                         '--max_process_number=' + max_process_number + ' ' + '--max_output_size=' + max_output_size + ' ' +
-                        '--exe_path="/home/test.o"' + ' ' + '--input_path="/home/input.txt"' + ' ' +
-                        '--output_path="/home/output.txt"' + ' ' + '--error_path="/home/error.txt"' + ' ' + '--uid=0' + ' ' +
+                        `--exe_path="${testerDir}/test.o"` + ' ' + `--input_path="${testerDir}/input.txt"` + ' ' +
+                        `--output_path="${testerDir}/output.txt"` + ' ' + `--error_path="${testerDir}/error.txt"` + ' ' + '--uid=0' + ' ' +
                         '--gid=0' + ' ' + '--seccomp_rule_name=' + seccomp_rule(lang);
 
                     const stdout = execSync(script).toString();
